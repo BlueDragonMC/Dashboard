@@ -1,7 +1,6 @@
 <template>
   <main>
-    <pre v-if="error">⚠️ {{ error }}</pre>
-    <table>
+    <table :class="$props.error ? 'error' : ''">
       <thead>
         <tr>
           <th>Server</th>
@@ -9,7 +8,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="server in gameservers">
+        <tr v-for="server in $props.gameservers">
           <td>
             <!-- Server name and address -->
             <router-link class="bold" :to="'/server/' + server.name">{{ server.name }}</router-link>
@@ -31,16 +30,16 @@
                   <router-link class="small muted" :to="'/instance/' + instance">{{ instance }}</router-link>
                 </td>
                 <td class="small">
-                  {{ instances[instance]?.gameType.name }}
+                  {{ $props.instances[instance]?.gameType.name }}
                 </td>
                 <td class="small">
-                  {{ instances[instance]?.gameType.mapName }}
+                  {{ $props.instances[instance]?.gameType.mapName }}
                 </td>
                 <td class="small">
-                  {{ instances[instance]?.gameState.stateName }}
+                  {{ $props.instances[instance]?.gameState.stateName }}
                 </td>
                 <td class="small">
-                  {{ instances[instance]?.gameState.openSlots }}
+                  {{ $props.instances[instance]?.gameState.openSlots }}
                 </td>
               </tr>
             </table>
@@ -53,51 +52,7 @@
 
 <script>
 export default {
-  created() {
-    this.update();
-    this.interval = setInterval(this.update, 5000);
-  },
-  beforeUnmount() {
-    if (this.interval) {
-      clearInterval(this.interval)
-      this.interval = undefined;
-    }
-  },
-  data() {
-    return {
-      interval: undefined,
-      gameservers: [],
-      instances: {},
-      error: undefined,
-      updatedAt: Date.now(),
-    }
-  },
-  methods: {
-    update() {
-      fetch("http://localhost:8080/gameservers")
-        .then(response => response.json())
-        .then(json => {
-          let servers = json["gameServers"];
-          this.gameservers = servers;
-          this.error = undefined;
-          for (const server of servers) {
-            for (const instance of server.instances) {
-              this.fetchInstance(instance);
-            }
-          }
-          this.updatedAt = Date.now()
-        }).catch(err => {
-          this.error = err;
-        });
-    },
-    fetchInstance(uuid) {
-      fetch(`http://localhost:8080/instance/${uuid}`)
-        .then(response => response.json())
-        .then(json => {
-          this.instances[uuid] = json;
-        })
-    }
-  }
+  props: ["instances", "gameservers", "error"]
 }
 </script>
 
@@ -114,10 +69,15 @@ td {
 
 table {
   width: 100%;
+  transition: opacity 0.25s ease-in;
 }
 
 table table td {
   padding: 5px;
+}
+
+table.error {
+  opacity: 0.25;
 }
 
 thead>tr>*,
