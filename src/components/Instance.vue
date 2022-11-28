@@ -1,16 +1,26 @@
 <template>
-    <h1 v-if="header">View Instance</h1>
+    <h1 v-if="header !== false">View Instance</h1>
     <div class="card" v-if="info" :class="exists ? '' : 'faded'">
-        <h2>
+        <h2> <!-- Instance ID -->
             <router-link :to="'/instance/' + info.id" class="muted">{{ info.id }}</router-link>
         </h2>
-        <h3>{{ state }} &middot; {{ info.emptySlots }} empty slot{{ info.emptySlots == 1 ? '' : 's'}}
-            ({{info.gameState?.joinable == false ? 'Not Joinable' : 'Joinable'}})</h3>
-        <h3>🎮️ {{ info.gameType?.name }}</h3>
-        <h3>🗺️ {{ info.gameType?.mapName }}</h3>
-        <h3>⌨️ <router-link :to="'/server/' + info.gameServer" class="muted">{{ info.gameServer }}</router-link></h3>
+        <!-- State, empty slots, and joinable (yes/no) -->
+        <h3>{{ state }} &middot; {{ info.emptySlots }} empty slot{{ info.emptySlots == 1 ? '' : 's' }}
+            ({{ info.gameState?.joinable == false ? 'Not Joinable' : 'Joinable' }})</h3>
+        <h3> <!-- Game name -->
+            🎮️ <router-link :to="'/game/' + info.gameType?.name" class="muted">
+                {{ info.gameType?.name }}
+            </router-link>
+        </h3>
+        <h3> <!-- Map name -->
+            🗺️ <router-link :to="'/game/' + info.gameType?.name + '/' + info.gameType?.mapName" class="muted">
+                {{ info.gameType?.mapName }}
+            </router-link>
+        </h3>
+        <h3>⌨️ <router-link :to="'/server/' + info.gameServer" class="muted">{{ info.gameServer }}</router-link>
+        </h3>
     </div>
-    <pre v-else>🔄 Loading...</pre>
+    <pre v-else>🔄 Loading '{{ this.$props.name }}'...</pre>
 </template>
 
 <script>

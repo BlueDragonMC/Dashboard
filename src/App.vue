@@ -4,14 +4,14 @@ import imgUrl from './assets/favicon.png';
 
 <template>
     <header>
-        <h1>
+        <h1 class="logo-header">
             <img :src="imgUrl" class="logo" />
             <router-link class="muted" :to="'/'">Dashboard</router-link>
         </h1>
     </header>
     <pre v-if="error">⚠️ {{ error }}</pre>
     <router-view :instances="instances" :gameservers="gameservers" :error="error"></router-view>
-    <p>&copy; 2022 <a href="//bluedragonmc.com">BlueDragonMC</a>. Made with ❤️ and <a href="//vuejs.org">Vue 3</a>.</p>
+    <p class="footer">&copy; 2022 <a href="//bluedragonmc.com">BlueDragonMC</a>. Made with ❤️ and <a href="//vuejs.org">Vue 3</a>.</p>
 </template>
 
 <script>
@@ -125,5 +125,16 @@ export default {
 img.logo {
     height: 1em;
     vertical-align: text-bottom;
+}
+
+.footer {
+    margin-top: 40px;
+}
+
+h1.logo-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.2em;
+    margin-bottom: 10px;
 }
 </style>

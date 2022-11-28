@@ -20,8 +20,8 @@
             <table>
               <tr>
                 <td>Name</td>
-                <td>Game</td>
-                <td>Map</td>
+                <td>🎮️ Game</td>
+                <td>🗺️ Map</td>
                 <td>State</td>
                 <td>Slots</td>
               </tr>
@@ -30,13 +30,21 @@
                   <router-link class="small muted" :to="'/instance/' + instance">{{ instance }}</router-link>
                 </td>
                 <td class="small">
-                  {{ $props.instances[instance]?.gameType.name }}
+                  <router-link :to="'/game/' + $props.instances[instance]?.gameType.name" class="muted">
+                    {{ $props.instances[instance]?.gameType.name }}
+                  </router-link>
                 </td>
                 <td class="small">
-                  {{ $props.instances[instance]?.gameType.mapName }}
+                  <router-link
+                    :to="'/game/' + $props.instances[instance]?.gameType.name + '/' + $props.instances[instance]?.gameType.mapName"
+                    class="muted">
+                    {{ $props.instances[instance]?.gameType.mapName }}
+                  </router-link>
                 </td>
                 <td class="small">
-                  {{ $props.instances[instance]?.gameState.stateName }}
+                  <router-link :to="'/state/' + $props.instances[instance]?.gameState?.stateName" class="muted">
+                    {{ $props.instances[instance]?.gameState.stateName }}
+                  </router-link>
                 </td>
                 <td class="small">
                   {{ $props.instances[instance]?.gameState.openSlots }}
