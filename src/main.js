@@ -12,12 +12,12 @@ import './assets/main.css'
 
 const routes = [
     { path: '/', component: Main },
-    { path: '/server/:name', component: GameServer },
+    { path: '/server/:name', component: GameServer, props: true },
     { path: '/instance/:name', component: Instance, props: true },
     { path: '/game/:name', component: GameType, props: true },
     { path: '/game/:name/:mapName', component: GameType, props: true },
     { path: '/state/:state', component: GameState, props: true },
-    { path: '/:pathMatch(.*)*', component: NotFound },
+    { path: '/:pathMatch(.*)*', component: NotFound }, // 404 page
 ]
 
 const router = createRouter({

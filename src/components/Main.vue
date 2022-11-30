@@ -24,32 +24,41 @@
                 <td>🗺️ Map</td>
                 <td>State</td>
                 <td>Slots</td>
+                <td>Players</td>
               </tr>
-              <tr v-for="instance in server.instances">
-                <td>
-                  <router-link class="small muted" :to="'/instance/' + instance">{{ instance }}</router-link>
-                </td>
-                <td class="small">
-                  <router-link :to="'/game/' + $props.instances[instance]?.gameType.name" class="muted">
-                    {{ $props.instances[instance]?.gameType.name }}
-                  </router-link>
-                </td>
-                <td class="small">
-                  <router-link
-                    :to="'/game/' + $props.instances[instance]?.gameType.name + '/' + $props.instances[instance]?.gameType.mapName"
-                    class="muted">
-                    {{ $props.instances[instance]?.gameType.mapName }}
-                  </router-link>
-                </td>
-                <td class="small">
-                  <router-link :to="'/state/' + $props.instances[instance]?.gameState?.stateName" class="muted">
-                    {{ $props.instances[instance]?.gameState.stateName }}
-                  </router-link>
-                </td>
-                <td class="small">
-                  {{ $props.instances[instance]?.gameState.openSlots }}
-                </td>
-              </tr>
+              <TransitionGroup name="list">
+                <tr v-for="instance in getInstances(server)" :key="instance.id">
+                  <td>
+                    <router-link class="small muted" :to="'/instance/' + instance.id">{{ instance.id }}</router-link>
+                  </td>
+                  <td class="small">
+                    <router-link :to="'/game/' + instance.gameType.name" class="muted">
+                      {{ instance.gameType.name }}
+                    </router-link>
+                  </td>
+                  <td class="small">
+                    <router-link :to="'/game/' + instance.gameType.name + '/' + instance.gameType.mapName"
+                      class="muted">
+                      {{ instance.gameType.mapName }}
+                    </router-link>
+                  </td>
+                  <td class="small">
+                    <router-link :to="'/state/' + instance.gameState?.stateName" class="muted">
+                      {{ instance.gameState.stateName }}
+                    </router-link>
+                  </td>
+                  <td class="small">
+                    {{ instance.gameState.playerCount }}/{{ getTotalPlayers(instance) }}
+                  </td>
+                  <td class="small">
+                    <TransitionGroup name="players">
+                      <img v-for="player in $props.players[instance.id]" :key="player"
+                        :src="'https://crafatar.com/avatars/' + player + '?size=24&overlay=true'" class="player-icon"
+                        :title="$props.usernames[player]" :alt="$props.usernames[player]" />
+                    </TransitionGroup>
+                  </td>
+                </tr>
+              </TransitionGroup>
             </table>
           </td>
         </tr>
@@ -60,7 +69,17 @@
 
 <script>
 export default {
-  props: ["instances", "gameservers", "error"]
+  props: ["instances", "gameservers", "players", "usernames", "error"],
+  methods: {
+    getInstances(server) {
+      return server.instances
+        .map((instanceId) => this.$props.instances[instanceId])
+        .filter((instance) => instance != null);
+    },
+    getTotalPlayers(instance) {
+      return instance.gameState.openSlots + instance.gameState.playerCount;
+    },
+  }
 }
 </script>
 
@@ -70,9 +89,15 @@ table {
   border-radius: 10px;
 }
 
+@media(prefers-color-scheme: light) {
+    table {
+        background: rgba(0, 0, 0, 0.1);
+    }
+}
+
 th,
 td {
-  padding: 20px;
+  padding: 5px 15px;
 }
 
 table {
@@ -95,5 +120,36 @@ thead>tr>*,
 
 .small {
   font-size: small;
+}
+
+img.player-icon {
+  width: 24px;
+  height: 24px;
+  /* Disable nearest-neighbor (blurry) image upscaling */
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+}
+
+.list-leave-to {
+  opacity: 0;
+}
+
+.players-enter-active,
+.players-leave-active {
+  transition: all 0.5s ease;
+}
+
+.players-enter-from,
+.players-leave-to {
+  opacity: 0;
 }
 </style>

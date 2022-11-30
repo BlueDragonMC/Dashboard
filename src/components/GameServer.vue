@@ -8,7 +8,7 @@ import Instance from './Instance.vue';
         <pre>{{ info?.address }}:{{ info?.port }}</pre>
         <div v-for="instance in info.instances">
             <Instance :name="instance" :header="false" :instances="$props.instances"
-                :gameservers="$props.gameservers" />
+                :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
         </div>
     </div>
     <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
@@ -20,14 +20,14 @@ export default {
     computed: {
         info() {
             for (const server of this.$props.gameservers) {
-                if (this.$route.params.name == server.name) {
+                if (this.$props.name == server.name) {
                     return server;
                 }
             }
             return null;
         }
     },
-    props: ["instances", "gameservers", "error"]
+    props: ["name", "instances", "gameservers", "players", "usernames", "error"],
 }
 </script>
 

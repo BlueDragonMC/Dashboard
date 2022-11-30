@@ -8,7 +8,7 @@ import Instance from "./Instance.vue";
     <div v-if="typedInstances">
         <div v-for="instance in typedInstances">
             <Instance :name="instance.id" :header="false" :instances="$props.instances"
-                :gameservers="$props.gameservers" />
+                :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
         </div>
     </div>
     <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
@@ -17,7 +17,7 @@ import Instance from "./Instance.vue";
 
 <script>
 export default {
-    props: ["name", "mapName", "instances", "gameservers", "error"],
+    props: ["name", "mapName", "instances", "gameservers", "players", "usernames", "error"],
     computed: {
         typedInstances() {
             return Object.values(this.$props.instances).filter(instance => {
