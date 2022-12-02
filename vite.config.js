@@ -9,6 +9,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
-})
+    },
+  },
+  server: {
+    proxy: {
+      '/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+      },
+    },
+  },
+});

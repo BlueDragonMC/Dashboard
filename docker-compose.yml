@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  node:
+    build: '.'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # network_mode: host
+    environment:
+      NODE_ENV: production
+      SERVER_PORT: 3000
+      WS_ADDRESS: http://host.docker.internal:8080
+    ports:
+      - "3000:3000"

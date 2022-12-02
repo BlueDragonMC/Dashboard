@@ -71,6 +71,7 @@ export default {
                     break;
                 case "update":
                     this.handleUpdate(data);
+                    this.requestUsernames();
                     break;
                 default:
                     console.warn("Unknown message type", data.type);
@@ -177,7 +178,7 @@ export default {
             this.connectDelay *= 1.5;
         },
         openConnection() {
-            let socket = new WebSocket("ws://localhost:8080/");
+            let socket = new WebSocket("ws://" + location.host + "/ws");
             this.ws = socket;
             socket.onopen = this.onOpen;
             socket.onclose = this.onClose;
