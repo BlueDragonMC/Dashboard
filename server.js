@@ -3,7 +3,7 @@ import http from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 const wsAddress = process.env.WS_ADDRESS || "ws://127.0.0.1:8080"
-const httpAddress = process.env.WS_ADDRESS || "http://127.0.0.1:8001"
+const httpAddress = process.env.K8S_API_ADDRESS || "http://127.0.0.1:8001"
 const port = process.env.SERVER_PORT || 3000
 const host = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1"
 
