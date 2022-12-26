@@ -17,6 +17,10 @@ export default defineConfig({
         target: 'http://localhost:8080',
         ws: true,
       },
+      '/k8s': {
+        target: 'http://127.0.0.1:8001',
+        rewrite: path => path.replace(/^\/k8s/, '')
+      }
     },
   },
 });

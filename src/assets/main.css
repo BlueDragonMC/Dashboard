@@ -1,10 +1,8 @@
 @import './base.css';
 
 #app {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-
   font-weight: normal;
 }
 
@@ -21,21 +19,34 @@ a.muted {
   transition: 0.4s;
 }
 
+h1.header {
+  font-weight: bold;
+  text-align: left;
+}
+
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: rgba(39, 146, 247, 0.2);
   }
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
+@media screen and (max-width: 1300px) {
+  .hide-sm {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .hide-xs {
+    display: none;
   }
 
-  /* #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  } */
+  #app {
+    padding: 0;
+  }
+}
+
+pre.hljs,
+pre.hljs code.hljs {
+  border-radius: 10px;
 }

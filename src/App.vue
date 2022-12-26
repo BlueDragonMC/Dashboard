@@ -14,7 +14,7 @@ import imgUrl from './assets/favicon.png';
         <pre v-if="connecting" class="info">🔌 Connecting...</pre>
         <pre v-if="reconnecting" class="warning">🔌 Reconnecting...</pre>
     </div>
-    <router-view :instances="instances" :gameservers="gameservers" :error="error" :players="players"
+    <router-view :instances="instances" :gameservers="gameservers" :error="error" :players="players" :logs="logs"
         :usernames="usernames"></router-view>
     <p class="footer">&copy; 2022 <a href="//bluedragonmc.com">BlueDragonMC</a> &middot; Made with ❤️ and <a
             href="//vuejs.org">Vue 3</a>.</p>
@@ -48,21 +48,21 @@ export default {
             switch (data.type) {
                 case "gameServers":
                     this.gameservers = data.gameServers;
-                    console.log("Updated all game servers");
+                    this.logs.info("Updated all game servers");
                     break;
                 case "instances":
                     for (const instance of data.instances) {
                         this.instances[instance.id] = instance;
                     }
-                    console.log("Updated all instances");
+                    this.logs.info("Updated all instances");
                     break;
                 case "gameTypes":
                     this.gameTypes = data.gameTypes;
-                    console.log("Updated all game types");
+                    this.logs.info("Updated all game types");
                     break;
                 case "players":
                     this.players = data.players;
-                    console.log("Updated all players");
+                    this.logs.info("Updated all players");
                     this.requestUsernames();
                     break;
                 case "playerInfo":
@@ -85,16 +85,16 @@ export default {
                     switch (data.action) {
                         case "add": // Adding a new game server
                             this.gameservers.push(data.updated);
-                            console.log("Added game server", data.id);
+                            this.logs.log("gs", `Added game server: ${data.id}`);
                             break;
                         case "remove":
                             this.gameservers = this.gameservers.filter(el => {
                                 return el.name != data.id;
                             });
-                            console.log("Removed game server", data.id);
+                            this.logs.log("gs", `Removed game server: ${data.id}`);
                             break;
                         default:
-                            console.warn("Unknown action", data.action);
+                            this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
                             break;
                     }
                     break;
@@ -108,21 +108,21 @@ export default {
                                     server.instances.push(data.id);
                                 }
                             }
-                            console.log("Added new instance", data.id);
+                            this.logs.log("instance", `New instance: ${data.id}`);
                             break;
                         case "remove":
                             delete this.instances[data.id];
                             for (const server of this.gameservers) {
                                 server.instances = server.instances.filter(el => el != data.id);
                             }
-                            console.log("Removed instance", data.id)
+                            this.logs.log("instance", `Instance removed: ${data.id}`);
                             break;
                         case "update":
                             this.instances[data.id] = data.updated;
-                            console.log("Updated instance", data.id);
+                            this.logs.log("instance", `Instance updated: ${data.id}`);
                             break;
                         default:
-                            console.warn("Unknown action", data.action);
+                            this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
                             break;
                     }
                     break;
@@ -131,6 +131,7 @@ export default {
                     switch (data.action) {
                         case "logout":
                             this.players[instance] = this.players[instance].filter(player => player != data.id); // Remove from their instance
+                            this.logs.log("player", `Player logged out: ${this.usernames[data.id] ?? data.id}`);
                             break;
                         case "transfer":
                             if (this.players[instance]) { // The field may not exist if the player just logged in without an instance to transfer from
@@ -140,14 +141,20 @@ export default {
                                 this.players[data.updated.instance] = []; // Create a new entry in the map if necessary
                             }
                             this.players[data.updated.instance].push(data.id); // Add to new instance
+                            if (instance !== undefined) {
+                                if (instance !== data.updated.instance)
+                                    this.logs.log("player", `Player ${this.usernames[data.id] ?? data.id} switched from ${instance} to ${data.updated.instance}.`);
+                            } else {
+                                this.logs.log("player", `Player ${this.usernames[data.id] ?? data.id} logged in to ${data.updated.instance}.`);
+                            }
                             break;
                         default:
-                            console.warn("Unknown action", data.action);
+                            this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
                             break;
                     }
                     break;
                 default:
-                    console.warn("Unknown resource type", data.resource);
+                    this.logs.warn(`Dashboard error: unknown resource type: ${data.resource}`);
                     break;
             }
         },
@@ -155,7 +162,7 @@ export default {
             return Object.keys(this.players).find((instance) => this.players[instance].includes(player));
         },
         onOpen(event) {
-            console.log("Socket opened", event);
+            this.logs.info("Connection opened.");
             this.requestFullUpdate();
             this.error = undefined;
             this.connecting = false;
@@ -163,6 +170,7 @@ export default {
             this.connectDelay = 1000;
         },
         onClose(event) {
+            this.logs.error(`Connection closed. (Status code: ${event.code})`);
             this.connecting = false;
             setTimeout(() => {
                 if (this.reconnecting) {
@@ -174,8 +182,11 @@ export default {
             setTimeout(() => {
                 this.openConnection();
                 this.reconnecting = true;
+                this.logs.warn(`Reconnecting in ${Math.round(this.connectDelay / 1000)} seconds...`);
             }, this.connectDelay);
-            this.connectDelay *= 1.5;
+            if (this.connectDelay < 30) {
+                this.connectDelay *= 1.5;
+            }
         },
         openConnection() {
             let socket = new WebSocket("ws://" + location.host + "/ws");
@@ -183,7 +194,7 @@ export default {
             socket.onopen = this.onOpen;
             socket.onclose = this.onClose;
             socket.onmessage = this.onMessageReceived;
-        },
+        }
     },
     data() {
         return {
@@ -196,7 +207,27 @@ export default {
             connectDelay: 1000,
             reconnecting: false,
             connecting: true,
-        }
+            logs: {
+                items: [],
+                info: (msg) => this.logs.log("info", msg),
+                warn: (msg) => this.logs.log("warn", msg),
+                error: (msg) => this.logs.log("error", msg),
+                log: (type, msg) => {
+                    this.logs.items.push({ type: type, message: msg, time: new Date().getTime() });
+                    if (this.logs.items.length > 15) {
+                        this.logs.items.shift();
+                    }
+                },
+                types: {
+                    "info": "ℹ️",
+                    "warn": "⚠️",
+                    "error": "🛑",
+                    "player": "👨‍💻",
+                    "instance": "🌎️",
+                    "gs": "🖥️",
+                },
+            },
+        };
     }
 }
 </script>
@@ -208,7 +239,7 @@ img.logo {
 }
 
 .footer {
-    margin-top: 40px;
+    margin-top: 15px;
 }
 
 h1.logo-header {

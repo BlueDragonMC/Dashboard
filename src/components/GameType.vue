@@ -1,18 +1,20 @@
-<script type="text/javascript" setup>
+<script setup type="text/javascript">
 import Instance from "./Instance.vue";
 </script>
 
 <template>
-    <h1>🎮️ Game Type: {{ $route.params.name }}</h1>
-    <h2 v-if="$props.mapName">🗺️ Map Name: {{ $route.params.mapName }}</h2>
-    <div v-if="typedInstances">
-        <div v-for="instance in typedInstances">
-            <Instance :name="instance.id" :header="false" :instances="$props.instances"
-                :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
+    <main>
+        <h1>🎮️ Game Type: {{ $route.params.name }}</h1>
+        <h2 v-if="$props.mapName">🗺️ Map Name: {{ $route.params.mapName }}</h2>
+        <div v-if="typedInstances">
+            <div v-for="instance in typedInstances">
+                <Instance :name="instance.id" :header="false" :instances="$props.instances"
+                    :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
+            </div>
         </div>
-    </div>
-    <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
-    <h2 v-else>No matching game servers were found.</h2>
+        <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
+        <h2 v-else>No matching game servers were found.</h2>
+    </main>
 </template>
 
 <script>

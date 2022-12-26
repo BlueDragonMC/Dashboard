@@ -3,18 +3,21 @@ import Instance from "./Instance.vue";
 </script>
 
 <template>
-    <h1>🎲 Game State: {{ displayText }}</h1>
-    <div v-if="typedInstances.length > 0">
-        <div v-for="instance in typedInstances">
-            <Instance :name="instance.id" :header="false" :instances="$props.instances"
-                :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
+    <main>
+        <h1>🎲 Game State: {{ displayText }}</h1>
+        <p>There are {{ typedInstances.length }} instances in the {{ $props.state }} state.</p>
+        <div v-if="typedInstances.length > 0">
+            <div v-for="instance in typedInstances">
+                <Instance :name="instance.id" :header="false" :instances="$props.instances"
+                    :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
+            </div>
         </div>
-    </div>
-    <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
-    <div v-else>
-        <h2>No matching game servers were found.</h2>
-        <h3><router-link :to="'/'">Click here</router-link> to return to the home page.</h3>
-    </div>
+        <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
+        <div v-else>
+            <h2>No matching game servers were found.</h2>
+            <h3><router-link :to="'/'">Click here</router-link> to return to the home page.</h3>
+        </div>
+    </main>
 </template>
 
 <script>
