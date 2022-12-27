@@ -15,7 +15,10 @@ createStyle("dark", import("highlight.js/styles/panda-syntax-dark.css?inline"));
 
 <template>
     <main>
-        <h1 class="header">Logs for {{ $props.pod }}</h1>
+        <h1 class="header">
+            Logs for {{ $props.pod }}
+            <span class="small">(<a :href="url" target="_blank" rel="noopener noreferrer">View Raw</a>)</span>
+        </h1>
         <p>
             Showing logs since
             <input type="number" v-model="timeAgoNumber" />
@@ -49,12 +52,9 @@ export default {
             this.needsRefresh = false;
         },
         loadLogs() {
-            const ns = this.$props.namespace;
-            const pod = this.$props.pod;
-            const url = `/k8s/api/v1/namespaces/${ns}/pods/${pod}/log?container=server&follow=true&sinceSeconds=${this.secondsAgo}`;
             this.abortController.abort();
             this.abortController = new AbortController();
-            fetch(url, {
+            fetch(this.url, {
                 signal: this.abortController.signal
             }).then((response) => {
                 const reader = response.body.getReader();
@@ -87,6 +87,11 @@ export default {
         },
         secondsAgo() {
             return this.timeAgoNumber * this.timeAgoMultiplier;
+        },
+        url() {
+            const ns = this.$props.namespace;
+            const pod = this.$props.pod;
+            return `/k8s/api/v1/namespaces/${ns}/pods/${pod}/log?container=server&follow=true&sinceSeconds=${this.secondsAgo}`;
         }
     },
     watch: {
@@ -119,5 +124,13 @@ pre {
     white-space: pre-wrap;
     font-size: 12px;
     font-family: unset;
+}
+
+.small {
+    font-size: small;
+}
+
+input[type=number] {
+    width: 50px;
 }
 </style>

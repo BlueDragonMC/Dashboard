@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia';
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import hljsVuePlugin from '@highlightjs/vue-plugin'
 import 'highlight.js/lib/common';
 import App from './App.vue'
@@ -10,18 +12,24 @@ import GameType from './components/GameType.vue'
 import GameState from './components/GameState.vue'
 import NotFound from './components/404.vue'
 import Logs from './components/Logs.vue'
+import GameServersList from './components/GameServersList.vue'
+import EventLogs from './components/EventLogs.vue'
+import ClusterControls from './components/ClusterControls.vue'
 
 import './assets/main.css'
 
 const routes = [
-    { path: '/', component: Main },
-    { path: '/server/:name', component: GameServer, props: true },
-    { path: '/instance/:name', component: Instance, props: true },
-    { path: '/game/:name', component: GameType, props: true },
-    { path: '/game/:name/:mapName', component: GameType, props: true },
-    { path: '/state/:state', component: GameState, props: true },
-    { path: '/logs/:namespace/:pod', component: Logs, props: true },
-    { path: '/:pathMatch(.*)*', component: NotFound }, // 404 page
+    { path: '/', name: "Dashboard", component: Main },
+    { path: '/server/:name', name: "Game Server", component: GameServer, props: true },
+    { path: '/instance/:name', name: "View Instance", component: Instance, props: true },
+    { path: '/game/:name', name: "Game Type", component: GameType, props: true },
+    { path: '/game/:name/:mapName', name: "Map Name", component: GameType, props: true },
+    { path: '/state/:state', name: "Game State", component: GameState, props: true },
+    { path: '/logs/:namespace/:pod', name: "Pod Logs", component: Logs, props: true },
+    { path: '/events', name: "Event Log", component: EventLogs },
+    { path: '/gameservers', name: "Game Servers", component: GameServersList },
+    { path: '/cluster', name: "Cluster Options", component: ClusterControls },
+    { path: '/:pathMatch(.*)*', name: "Page Not Found", component: NotFound }, // 404 page
 ]
 
 const router = createRouter({
@@ -30,6 +38,9 @@ const router = createRouter({
 })
 
 const app = createApp(App)
-app.use(router)
-app.use(hljsVuePlugin)
-app.mount('#app')
+const pinia = createPinia();
+app.use(pinia);
+app.use(router);
+app.use(hljsVuePlugin);
+app.component('ic', FontAwesomeIcon);
+app.mount('#app');

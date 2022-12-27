@@ -1,5 +1,6 @@
 <script setup>
-import imgUrl from './assets/favicon.png';
+import imgUrl from './assets/favicon_hq.png';
+import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <template>
@@ -7,6 +8,10 @@ import imgUrl from './assets/favicon.png';
         <h1 class="logo-header">
             <img :src="imgUrl" class="logo" />
             <router-link class="muted" :to="'/'">Dashboard</router-link>
+            <span v-if="$route.path != '/'" v-for="element in path">
+                <ic :icon="faAnglesRight" class="breadcrum" />
+                <router-link class="muted" :to="element.path">{{ element.name }}</router-link>
+            </span>
         </h1>
     </header>
     <div class="alerts">
@@ -14,13 +19,16 @@ import imgUrl from './assets/favicon.png';
         <pre v-if="connecting" class="info">🔌 Connecting...</pre>
         <pre v-if="reconnecting" class="warning">🔌 Reconnecting...</pre>
     </div>
-    <router-view :instances="instances" :gameservers="gameservers" :error="error" :players="players" :logs="logs"
-        :usernames="usernames"></router-view>
+    <router-view></router-view>
     <p class="footer">&copy; 2022 <a href="//bluedragonmc.com">BlueDragonMC</a> &middot; Made with ❤️ and <a
             href="//vuejs.org">Vue 3</a>.</p>
 </template>
 
 <script>
+import { mapWritableState } from 'pinia';
+import { useStore } from './stores/store';
+import { faCircleExclamation, faInfoCircle, faLayerGroup, faPersonWalking, faServer, faWarning } from '@fortawesome/free-solid-svg-icons';
+
 export default {
     created() {
         this.openConnection();
@@ -48,17 +56,17 @@ export default {
             switch (data.type) {
                 case "gameServers":
                     this.gameservers = data.gameServers;
-                    this.logs.info("Updated all game servers");
+                    this.logs.info("Updated all game servers", `Retrieved ${this.gameservers.length} servers.`);
                     break;
                 case "instances":
                     for (const instance of data.instances) {
                         this.instances[instance.id] = instance;
                     }
-                    this.logs.info("Updated all instances");
+                    this.logs.info("Updated all instances", `Retrieved ${Object.keys(this.instances).length} instances.`);
                     break;
                 case "gameTypes":
-                    this.gameTypes = data.gameTypes;
-                    this.logs.info("Updated all game types");
+                    this.gameTypes = data.types;
+                    this.logs.info("Updated all game types", `Retrieved ${this.gameTypes.length} game types.`);
                     break;
                 case "players":
                     this.players = data.players;
@@ -85,7 +93,7 @@ export default {
                     switch (data.action) {
                         case "add": // Adding a new game server
                             this.gameservers.push(data.updated);
-                            this.logs.log("gs", `Added game server: ${data.id}`);
+                            this.logs.log("gs", `Added new game server: ${data.id}`);
                             break;
                         case "remove":
                             this.gameservers = this.gameservers.filter(el => {
@@ -108,18 +116,18 @@ export default {
                                     server.instances.push(data.id);
                                 }
                             }
-                            this.logs.log("instance", `New instance: ${data.id}`);
+                            this.logs.log("instance", `New instance: ${data.id.substring(0, 8)}`, data.id);
                             break;
                         case "remove":
                             delete this.instances[data.id];
                             for (const server of this.gameservers) {
                                 server.instances = server.instances.filter(el => el != data.id);
                             }
-                            this.logs.log("instance", `Instance removed: ${data.id}`);
+                            this.logs.log("instance", `Instance removed: ${data.id.substring(0, 8)}`, data.id);
                             break;
                         case "update":
                             this.instances[data.id] = data.updated;
-                            this.logs.log("instance", `Instance updated: ${data.id}`);
+                            this.logs.log("instance", `Instance updated: ${data.id.substring(0, 8)}`, data.id);
                             break;
                         default:
                             this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
@@ -162,7 +170,7 @@ export default {
             return Object.keys(this.players).find((instance) => this.players[instance].includes(player));
         },
         onOpen(event) {
-            this.logs.info("Connection opened.");
+            this.logs.info("Connection opened.", event.target.url);
             this.requestFullUpdate();
             this.error = undefined;
             this.connecting = false;
@@ -184,7 +192,7 @@ export default {
                 this.reconnecting = true;
                 this.logs.warn(`Reconnecting in ${Math.round(this.connectDelay / 1000)} seconds...`);
             }, this.connectDelay);
-            if (this.connectDelay < 30) {
+            if (this.connectDelay < 30000) {
                 this.connectDelay *= 1.5;
             }
         },
@@ -198,38 +206,76 @@ export default {
     },
     data() {
         return {
-            instances: {},
-            gameservers: [],
-            players: {},
-            usernames: {},
-            ws: undefined,
-            error: undefined,
-            connectDelay: 1000,
-            reconnecting: false,
-            connecting: true,
             logs: {
-                items: [],
-                info: (msg) => this.logs.log("info", msg),
-                warn: (msg) => this.logs.log("warn", msg),
-                error: (msg) => this.logs.log("error", msg),
-                log: (type, msg) => {
-                    this.logs.items.push({ type: this.logs.types[type], message: msg, time: new Date().toLocaleTimeString(), id: Math.random() });
-                    if (this.logs.items.length > 10) {
-                        this.logs.items.shift();
+                info: (msg, extra) => this.logs.log("info", msg, extra),
+                warn: (msg, extra) => this.logs.log("warn", msg, extra),
+                error: (msg, extra) => this.logs.log("error", msg, extra),
+                log: (type, msg, extra) => {
+                    this.events.push({
+                        type: this.logs.types[type],
+                        message: msg,
+                        extra: extra,
+                        time: new Date().toLocaleTimeString(),
+                        id: Math.random()
+                    });
+                    if (this.events.length > 50) {
+                        this.events.shift();
                     }
                 },
                 types: {
-                    "info": "ℹ️",
-                    "warn": "⚠️",
-                    "error": "🛑",
-                    "player": "👨‍💻",
-                    "instance": "🌎️",
-                    "gs": "🖥️",
+                    "info": faInfoCircle,
+                    "warn": faWarning,
+                    "error": faCircleExclamation,
+                    "player": faPersonWalking,
+                    "instance": faLayerGroup,
+                    "gs": faServer,
                 },
             },
         };
-    }
-}
+    },
+    computed: {
+        path() {
+            const path = this.$route.path;
+            console.log(this.$route);
+            if (path.startsWith("/server/")) {
+                return [{ name: "Game Servers", path: "/gameservers" }, { name: this.$route.params.name, path: this.$route.path }]
+            } else if (path.startsWith("/state/")) {
+                return [{ name: "Game Servers", path: "/gameservers" }, { name: this.$route.params.state, path: this.$route.path }]
+            } else if (path.startsWith("/instance/")) {
+                const gameServer = this.gameservers.find((it) => it.instances.includes(this.$route.params.name));
+                if (gameServer) {
+                    return [
+                        { name: "Game Servers", path: "/gameservers" },
+                        { name: gameServer.name, path: "/server/" + gameServer.name },
+                        { name: this.$route.params.name.substring(0, 8), path: this.$route.path }];
+                } else {
+                    return [
+                        { name: "View Instance", path: "/" },
+                        { name: this.$route.params.name.substring(0, 8), path: this.$route.path }];
+                }
+            } else if (this.$route.matched[0].path == "/game/:name") {
+                return [
+                    { name: "Game Servers", path: "/gameservers" },
+                    { name: this.$route.params.name, path: this.$route.path }
+                ]
+            } else if (this.$route.matched[0].path == "/game/:name/:mapName") {
+                return [
+                    { name: "Game Servers", path: "/gameservers" },
+                    { name: this.$route.params.name, path: "/game/" + this.$route.params.name },
+                    { name: this.$route.params.mapName, path: this.$route.path }
+                ]
+            } else if (path.startsWith("/logs/")) {
+                return [
+                    { name: "Game Servers", path: "/gameservers" },
+                    { name: this.$route.params.pod, path: "/server/" + this.$route.params.pod },
+                    { name: "Logs", path: this.$route.path }
+                ]
+            }
+            return [this.$route];
+        },
+        ...mapWritableState(useStore, ["ws", "error", "connectDelay", "reconnecting", "connecting", "gameservers", "instances", "players", "usernames", "events"]),
+    },
+};
 </script>
 
 <style scoped>
@@ -243,16 +289,10 @@ img.logo {
 }
 
 h1.logo-header {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--accent-background);
     border-radius: 10px;
     padding: 0.2em;
     margin-bottom: 10px;
-}
-
-@media(prefers-color-scheme: light) {
-    h1.logo-header {
-        background: rgba(0, 0, 0, 0.1);
-    }
 }
 
 .alerts pre {
@@ -273,5 +313,10 @@ h1.logo-header {
 
 .alerts pre.warning {
     background: rgba(255, 217, 0, 0.3);
+}
+
+.breadcrum {
+    font-size: medium;
+    margin: 0 0.5em;
 }
 </style>

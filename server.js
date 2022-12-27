@@ -38,10 +38,10 @@ app.use("/k8s", createProxyMiddleware({
         rejectUnauthorized: k8sToken !== undefined,
         ca: certs
     }),
-    onProxyReq: (proxyReq, req, res) => {
-        if (k8sToken !== undefined)
-            proxyReq.setHeader("Authorization", `Bearer ${k8sToken}`);
-    }
+    followRedirects: true,
+    headers: {
+        "Authorization": `Bearer ${k8sToken}`,
+    },
 }));
 
 // Proxy WebSockets

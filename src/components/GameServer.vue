@@ -1,4 +1,6 @@
 <script type="text/javascript" setup>
+import { mapState } from 'pinia';
+import { useStore } from '../stores/store';
 import Instance from './Instance.vue';
 import Logs from './Logs.vue';
 </script>
@@ -23,8 +25,7 @@ import Logs from './Logs.vue';
             <div class="grid-parent">
                 <div class="instances-col">
                     <div v-for="instance in info.instances">
-                        <Instance :name="instance" :header="false" :instances="$props.instances"
-                            :gameservers="$props.gameservers" :players="$props.players" :usernames="$props.usernames" />
+                        <Instance :name="instance" :header="false" />
                     </div>
                 </div>
                 <div class="logs-col">
@@ -32,7 +33,7 @@ import Logs from './Logs.vue';
                 </div>
             </div>
         </div>
-        <h2 v-else-if="$props.gameservers.length == 0">Loading...</h2>
+        <h2 v-else-if="gameservers.length == 0">Loading...</h2>
         <h2 v-else>Game server not found</h2>
     </main>
 </template>
@@ -41,15 +42,16 @@ import Logs from './Logs.vue';
 export default {
     computed: {
         info() {
-            for (const server of this.$props.gameservers) {
+            for (const server of this.gameservers) {
                 if (this.$props.name == server.name) {
                     return server;
                 }
             }
             return null;
-        }
+        },
+        ...mapState(useStore, ["instances", "gameservers", "players", "usernames", "error"]),
     },
-    props: ["name", "instances", "gameservers", "players", "usernames", "error"],
+    props: ["name"],
     components: { Logs }
 }
 </script>
