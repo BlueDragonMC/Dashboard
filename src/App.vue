@@ -213,8 +213,8 @@ export default {
                 warn: (msg) => this.logs.log("warn", msg),
                 error: (msg) => this.logs.log("error", msg),
                 log: (type, msg) => {
-                    this.logs.items.push({ type: type, message: msg, time: new Date().getTime() });
-                    if (this.logs.items.length > 15) {
+                    this.logs.items.push({ type: this.logs.types[type], message: msg, time: new Date().toLocaleTimeString(), id: Math.random() });
+                    if (this.logs.items.length > 10) {
                         this.logs.items.shift();
                     }
                 },

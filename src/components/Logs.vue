@@ -15,7 +15,7 @@ createStyle("dark", import("highlight.js/styles/panda-syntax-dark.css?inline"));
 
 <template>
     <main>
-        <h1 class="header">Logs for {{ this.$props.pod }}</h1>
+        <h1 class="header">Logs for {{ $props.pod }}</h1>
         <p>
             Showing logs since
             <input type="number" v-model="timeAgoNumber" />

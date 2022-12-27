@@ -1,4 +1,5 @@
 <script setup type="text/javascript">
+import { TransitionGroup } from "vue";
 import ClusterControls from "./ClusterControls.vue"
 </script>
 
@@ -8,13 +9,13 @@ import ClusterControls from "./ClusterControls.vue"
     <div class="col logs-panel">
       <h1 class="header">Events</h1>
       <div class="log-entries" :ref="'log-entries'">
-        <p v-for="log in logs.items" class="log-entry">
-          <span class="log-type">{{ logs.types[log.type] }}</span>
-          <span class="log-time">{{ new Date(log.time).toLocaleTimeString() }}</span>
-          <span class="log-message">{{ log.message }}</span>
-        </p>
-        <input type="checkbox" id="autoscroll-checkbox" v-model="autoscroll" />
-        <label for="autoscroll-checkbox">Scroll to bottom</label>
+        <TransitionGroup name="list">
+          <p v-for="log in logs.items" class="log-entry" :key="log.id">
+            <span class="log-type">{{ log.type }}</span>
+            <span class="log-time">{{ log.time }}</span>
+            <span class="log-message">{{ log.message }}</span>
+          </p>
+        </TransitionGroup>
       </div>
     </div>
     <!-- Game servers column -->
@@ -100,25 +101,7 @@ export default {
       return instance.gameState.openSlots + instance.gameState.playerCount;
     },
   },
-  data() {
-    return {
-      autoscroll: true,
-    };
-  },
-  watch: {
-    logs: {
-      deep: true,
-      handler() {
-        if (this.autoscroll) {
-          setTimeout(() => {
-            const parent = this.$refs["log-entries"];
-            const el = parent.children[parent.children.length - 1];
-            el.scrollIntoView({ behavior: "smooth", block: "end" });
-          }, 0);
-        }
-      }
-    }
-  }
+  components: { TransitionGroup }
 }
 </script>
 
@@ -135,11 +118,6 @@ b {
 .log-type,
 .log-message {
   padding: 5px;
-}
-
-#autoscroll-checkbox {
-  margin-left: 5px;
-  margin-right: 10px;
 }
 
 .log-time {

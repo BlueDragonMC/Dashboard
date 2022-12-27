@@ -32,7 +32,7 @@ import Logs from './Logs.vue';
                 </div>
             </div>
         </div>
-        <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
+        <h2 v-else-if="$props.gameservers.length == 0">Loading...</h2>
         <h2 v-else>Game server not found</h2>
     </main>
 </template>
@@ -48,11 +48,6 @@ export default {
             }
             return null;
         }
-    },
-    watch: {
-        info(newValue) {
-            console.log("info changed!", newValue);
-        },
     },
     props: ["name", "instances", "gameservers", "players", "usernames", "error"],
     components: { Logs }

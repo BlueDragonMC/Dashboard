@@ -1,6 +1,6 @@
 <template>
     <h1 v-if="header !== false">View Instance</h1>
-    <div class="card" v-if="info" :class="exists ? '' : 'faded'">
+    <div class="card" v-if="exists">
         <h2>
             <!-- Instance ID -->
             <router-link :to="'/instance/' + info.id" class="muted">{{ info.id }}</router-link>
@@ -31,7 +31,11 @@
                 :title="$props.usernames[player]" :alt="$props.usernames[player]" />
         </div>
     </div>
-    <pre v-else>🔄 Loading '{{ this.$props.name }}'...</pre>
+    <div v-else-if="loaded">
+        <h2>Not found</h2>
+        <p>The instance <code>{{ $props.name }}</code> does not exist. It may have been deleted or unregistered.</p>
+    </div>
+    <h3 v-else>🔄 Loading <code>{{ $props.name }}</code>...</h3>
 </template>
 
 <script>
@@ -44,8 +48,11 @@ export default {
             let name = this.info?.gameState?.stateName ?? "Loading...";
             return name.charAt(0) + name.slice(1).toLowerCase();
         },
+        loaded() {
+            return !!this.$props.instances;
+        },
         exists() {
-            return this.info != null;
+            return !!this.info;
         }
     },
     props: ["name", "header", "instances", "gameservers", "players", "usernames", "error"]

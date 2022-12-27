@@ -24,11 +24,17 @@ export default {
                 headers: {
                     "Content-Type": "application/merge-patch+json"
                 }
-            }).then((response) => response.json()).then((json) => {
+            }).then((response) => {
+                if (response.status >= 400 || !response.ok) {
+                    throw new DOMException(response.status + " " + response.statusText);
+                }
+                return response.json();
+            }).then((json) => {
+                console.log(json);
                 alert("Success! The Fleet was scaled to " + replicas + " replicas.");
             }).catch((err) => {
                 console.error(err);
-                alert("There was an error scaling the Fleet: " + JSON.stringify(err));
+                alert("There was an error scaling the Fleet:\n" + err);
             });
         }
     },
