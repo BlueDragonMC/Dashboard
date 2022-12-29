@@ -2,7 +2,7 @@
 import { mapWritableState } from "pinia";
 import { TransitionGroup } from "vue";
 import { useStore } from "../stores/store";
-import { faGears, faCircleNodes, faServer, faChess, faCalendarDays } from "@fortawesome/free-solid-svg-icons"
+import { faCircleNodes, faServer, faChess, faCalendarDays } from "@fortawesome/free-solid-svg-icons"
 </script>
 
 <template>

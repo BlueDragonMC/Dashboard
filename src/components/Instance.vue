@@ -1,5 +1,5 @@
 <script setup type="text/javascript">
-import { faGamepad, faMap, faServer, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faGamepad, faMap, faServer, faUsers } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <template>
@@ -28,6 +28,13 @@ import { faGamepad, faMap, faServer, faUsers } from '@fortawesome/free-solid-svg
             <ic :icon="faMap" />
             <router-link :to="'/game/' + info.gameType?.name + '/' + info.gameType?.mapName" class="muted">
                 {{ info.gameType?.mapName }}
+            </router-link>
+        </h3>
+        <h3 v-if="info.gameType?.mode">
+            <!-- Map name -->
+            <ic :icon="faFilter" />
+            <router-link :to="'/game/' + info.gameType?.name + '/' + info.gameType?.mapName" class="muted">
+                {{ info.gameType?.mode }}
             </router-link>
         </h3>
         <h3>

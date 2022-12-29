@@ -1,5 +1,5 @@
-<script setup type="text/javascript">
-import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers } from '@fortawesome/free-solid-svg-icons';
+<script type="text/javascript" setup>
+import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers, faFilter } from '@fortawesome/free-solid-svg-icons';
 </script>
 
 <template>
@@ -18,37 +18,44 @@ import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers } from '@fortaw
                         <td class="hide-xs"><ic :icon="faTag" /> Name</td>
                         <td><ic :icon="faGamepad" /> Game</td>
                         <td><ic :icon="faMap" /> Map</td>
+                        <td><ic :icon="faFilter" /> Mode</td>
                         <td><ic :icon="faSpinner" /> State</td>
                         <td><ic :icon="faDoorOpen" /> Slots</td>
                         <td class="hide-xs"><ic :icon="faUsers" /> Players</td>
                     </tr>
                     <TransitionGroup name="list">
                         <tr v-for="instance in getInstances(server)" :key="instance.id">
-                            <td class="hide-xs">
+                            <td class="hide-xs"> <!-- Primary instance name -->
                                 <router-link class="small muted" :to="'/instance/' + instance.id">
                                     {{ instance.id.substring(0, 8) }}
                                 </router-link>
                             </td>
-                            <td class="small">
+                            <td class="small"> <!-- Game type -->
                                 <router-link :to="'/game/' + instance.gameType.name" class="muted">
                                     {{ instance.gameType.name }}
                                 </router-link>
                             </td>
-                            <td class="small">
+                            <td class="small"> <!-- Map name -->
                                 <router-link :to="'/game/' + instance.gameType.name + '/' + instance.gameType.mapName"
                                     class="muted">
                                     {{ instance.gameType.mapName }}
                                 </router-link>
                             </td>
-                            <td class="small">
+                            <td class="small"> <!-- Game mode -->
+                                <router-link :to="'/game/' + instance.gameType.name + '/' + instance.gameType.mapName"
+                                    class="muted">
+                                    {{ instance.gameType.mode }}
+                                </router-link>
+                            </td>
+                            <td class="small"> <!-- Game state -->
                                 <router-link :to="'/state/' + instance.gameState?.stateName" class="muted">
                                     {{ instance.gameState.stateName }}
                                 </router-link>
                             </td>
-                            <td class="small">
+                            <td class="small"> <!-- Open slots -->
                                 {{ instance.gameState.playerCount }}/{{ getTotalPlayers(instance) }}
                             </td>
-                            <td class="small hide-xs">
+                            <td class="small hide-xs"> <!-- In-game players -->
                                 <TransitionGroup name="players">
                                     <img v-for="player in players[instance.id]" :key="player"
                                         :src="'https://crafatar.com/avatars/' + player + '?size=24&overlay=true'"
