@@ -1,6 +1,6 @@
 <script setup>
-import imgUrl from './assets/favicon_hq.png';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
+import imgUrl from './assets/favicon_hq.png';
 </script>
 
 <template>
@@ -25,9 +25,9 @@ import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 </template>
 
 <script>
+import { faCircleExclamation, faInfoCircle, faLayerGroup, faPersonWalking, faServer, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { mapWritableState } from 'pinia';
 import { useStore } from './stores/store';
-import { faCircleExclamation, faInfoCircle, faLayerGroup, faPersonWalking, faServer, faWarning } from '@fortawesome/free-solid-svg-icons';
 
 export default {
     created() {
@@ -112,7 +112,7 @@ export default {
                         case "add":
                             this.instances[data.id] = data.updated;
                             for (const server of this.gameservers) {
-                                if (data.updated.gameServer == server.name) {
+                                if (data.updated.gameServer == server.name && !server.instances.includes(data.id)) {
                                     server.instances.push(data.id);
                                 }
                             }
@@ -197,7 +197,8 @@ export default {
             }
         },
         openConnection() {
-            let socket = new WebSocket("ws://" + location.host + "/ws");
+            const protocol = location.protocol === "https:" ? "wss" : "ws";
+            let socket = new WebSocket(`${protocol}://${location.host}/ws`);
             this.ws = socket;
             socket.onopen = this.onOpen;
             socket.onclose = this.onClose;

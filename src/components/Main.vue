@@ -1,4 +1,4 @@
-<script setup type="text/javascript">
+<script type="text/javascript" setup>
 import { mapWritableState } from "pinia";
 import { TransitionGroup } from "vue";
 import { useStore } from "../stores/store";
