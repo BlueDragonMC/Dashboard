@@ -1,8 +1,8 @@
 import express from "express";
-import http from "http";
-import https from "https";
 import fs from "fs";
+import http from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import https from "https";
 
 const wsAddress = process.env.WS_ADDRESS || "ws://127.0.0.1:8080"
 const httpAddress = process.env.K8S_API_ADDRESS || "https://kubernetes.default.svc"
@@ -34,6 +34,7 @@ app.use("/k8s", createProxyMiddleware({
     pathRewrite: { "^/k8s": "" },
     logLevel: "debug",
     secure: k8sToken !== undefined,
+    changeOrigin: k8sToken !== undefined,
     agent: new https.Agent({
         rejectUnauthorized: k8sToken !== undefined,
         ca: certs
