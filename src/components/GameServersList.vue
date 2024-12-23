@@ -82,7 +82,7 @@ export default {
                 .filter((instance) => instance != null);
         },
         getTotalPlayers(instance) {
-            return instance.gameState.openSlots + instance.gameState.playerCount;
+            return instance.gameState.maxSlots ?? (instance.gameState.openSlots + instance.gameState.playerCount);
         },
     },
     computed: {
