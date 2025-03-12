@@ -1,5 +1,6 @@
 <script type="text/javascript" setup>
 import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers, faFilter } from '@fortawesome/free-solid-svg-icons';
+import PlayerIcon from "@/components/PlayerIcon.vue";
 </script>
 
 <template>
@@ -10,7 +11,7 @@ import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers, faFilter } fro
                 <router-link class="bold" :to="'/server/' + server.name">{{ server.name }}</router-link>
                 <br />
                 <pre class="small">{{ server.address }}:{{ server.port }}</pre>
-                <p class="small">{{ server.instances.length }} instances</p>
+                <p class="small">{{ server.instances.length }} instance{{server.instances.length === 1 ? "" : "s"}}</p>
             </div>
             <div class="gs-table-row-server-details">
                 <table class="child-table">
@@ -57,9 +58,7 @@ import { faTag, faGamepad, faMap, faSpinner, faDoorOpen, faUsers, faFilter } fro
                             </td>
                             <td class="small hide-xs"> <!-- In-game players -->
                                 <TransitionGroup name="players">
-                                    <img v-for="player in players[instance.id]" :key="player"
-                                        :src="'https://crafatar.com/avatars/' + player + '?size=24&overlay=true'"
-                                        class="player-icon" :title="usernames[player]" :alt="usernames[player]" />
+                                    <PlayerIcon v-for="player in getPlayers(instance.id)" :key="player" :player="player" :size="24" />
                                 </TransitionGroup>
                             </td>
                         </tr>
@@ -84,6 +83,9 @@ export default {
         getTotalPlayers(instance) {
             return instance.gameState.maxSlots ?? (instance.gameState.openSlots + instance.gameState.playerCount);
         },
+        getPlayers(gameId) {
+            return this.players.filter((it) => it.gameId === gameId);
+        }
     },
     computed: {
         ...mapWritableState(useStore, ["gameservers", "instances", "players", "usernames"])
@@ -138,14 +140,6 @@ thead>tr>*,
 
 .small {
     font-size: small;
-}
-
-img.player-icon {
-    width: 24px;
-    height: 24px;
-    /* Disable nearest-neighbor (blurry) image upscaling */
-    image-rendering: -moz-crisp-edges;
-    image-rendering: pixelated;
 }
 
 .list-enter-active,

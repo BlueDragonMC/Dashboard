@@ -1,8 +1,12 @@
 <script type="text/javascript" setup>
-import { mapWritableState } from "pinia";
-import { TransitionGroup } from "vue";
-import { useStore } from "../stores/store";
-import { faCircleNodes, faServer, faChess, faCalendarDays } from "@fortawesome/free-solid-svg-icons"
+import {
+    faCircleNodes,
+    faServer,
+    faChess,
+    faCalendarDays,
+    faPersonWalking,
+    faUserGroup
+} from "@fortawesome/free-solid-svg-icons"
 </script>
 
 <template>
@@ -23,10 +27,22 @@ import { faCircleNodes, faServer, faChess, faCalendarDays } from "@fortawesome/f
       <ic class="icon" :icon="faChess" />
       <p>Active Instances</p>
     </router-link>
+    <router-link :to="'/players'" class="link">
+      <ic class="icon" :icon="faPersonWalking" />
+      <p>Player List</p>
+    </router-link>
+    <router-link :to="'/parties'" class="link">
+      <ic class="icon" :icon="faUserGroup" />
+      <p>Parties</p>
+    </router-link>
   </main>
 </template>
 
 <script>
+import { mapWritableState } from "pinia";
+import { TransitionGroup } from "vue";
+import { useStore } from "../stores/store";
+
 export default {
   components: { TransitionGroup },
   computed: {
@@ -38,9 +54,17 @@ export default {
 <style scoped>
 main {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(1, 1fr);
   grid-auto-flow: row dense;
   grid-column-gap: 1em;
+
+    @media (min-width: 40rem) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 64rem) {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 .link {

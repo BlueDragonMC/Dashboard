@@ -15,6 +15,8 @@ import Logs from './components/Logs.vue'
 import GameServersList from './components/GameServersList.vue'
 import EventLogs from './components/EventLogs.vue'
 import ClusterControls from './components/ClusterControls.vue'
+import PlayerList from "@/components/PlayerList.vue";
+import PartyList from "@/components/PartyList.vue";
 
 import './assets/main.css'
 
@@ -29,6 +31,8 @@ const routes = [
     { path: '/events', name: "Event Log", component: EventLogs },
     { path: '/gameservers', name: "Game Servers", component: GameServersList },
     { path: '/cluster', name: "Cluster Options", component: ClusterControls },
+    { path: '/players', name: "Player List", component: PlayerList },
+    { path: '/parties', name: "Party List", component: PartyList },
     { path: '/:pathMatch(.*)*', name: "Page Not Found", component: NotFound }, // 404 page
 ]
 

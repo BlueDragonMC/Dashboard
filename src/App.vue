@@ -20,7 +20,7 @@ import imgUrl from './assets/favicon_hq.png';
         <pre v-if="reconnecting" class="warning">🔌 Reconnecting...</pre>
     </div>
     <router-view></router-view>
-    <p class="footer">&copy; 2022 <a href="//bluedragonmc.com">BlueDragonMC</a> &middot; Made with ❤️ and <a
+    <p class="footer">&copy; 2022-{{ new Date().getFullYear() }} <a href="//bluedragonmc.com">BlueDragonMC</a> &middot; Made with ❤️ and <a
             href="//vuejs.org">Vue 3</a>.</p>
 </template>
 
@@ -28,6 +28,7 @@ import imgUrl from './assets/favicon_hq.png';
 import { faCircleExclamation, faInfoCircle, faLayerGroup, faPersonWalking, faServer, faWarning } from '@fortawesome/free-solid-svg-icons';
 import { mapWritableState } from 'pinia';
 import { useStore } from './stores/store';
+import {applyPatch} from "fast-json-patch";
 
 export default {
     created() {
@@ -39,15 +40,7 @@ export default {
             this.ws.send(JSON.stringify({ request: 'getInstances' }));
             this.ws.send(JSON.stringify({ request: 'getGameTypes' }));
             this.ws.send(JSON.stringify({ request: 'getPlayers' }));
-        },
-        requestUsernames() {
-            for (const playerList of Object.values(this.players)) {
-                for (const player of playerList) {
-                    if (!this.usernames[player]) {
-                        this.ws.send(JSON.stringify({ request: 'getUsername', uuid: player }));
-                    }
-                }
-            }
+            this.ws.send(JSON.stringify({ request: 'getParties' }));
         },
         onMessageReceived(event) {
             this.reconnecting = false;
@@ -71,15 +64,17 @@ export default {
                 case "players":
                     this.players = data.players;
                     this.logs.info("Updated all players");
-                    this.requestUsernames();
                     break;
                 case "playerInfo":
                     this.usernames[data.uuid] = data.username;
                     console.log("Updated username for", data.username);
                     break;
+                case "parties":
+                    this.parties = data.parties;
+                    this.logs.info("Updated parties", `Retrieved ${Object.keys(this.parties).length} parties.`);
+                    break;
                 case "update":
                     this.handleUpdate(data);
-                    this.requestUsernames();
                     break;
                 default:
                     console.warn("Unknown message type", data.type);
@@ -97,9 +92,26 @@ export default {
                             break;
                         case "remove":
                             this.gameservers = this.gameservers.filter(el => {
-                                return el.name != data.id;
+                                return el.name !== data.id;
                             });
                             this.logs.log("gs", `Removed game server: ${data.id}`);
+                            break;
+                        // case "update":
+                        //     for (const i in this.gameservers) {
+                        //         if (this.gameservers[i].name === data.id) {
+                        //             this.gameservers[i] = data.updated;
+                        //             break;
+                        //         }
+                        //     }
+                        //     break;
+                        case "patch":
+                            for (const i in this.gameservers) {
+                                if (this.gameservers[i].name === data.id) {
+                                    const { newDocument } = applyPatch(this.gameservers[i], data.updated);
+                                    this.gameservers[i] = newDocument;
+                                    break;
+                                }
+                            }
                             break;
                         default:
                             this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
@@ -112,7 +124,7 @@ export default {
                         case "add":
                             this.instances[data.id] = data.updated;
                             for (const server of this.gameservers) {
-                                if (data.updated.gameServer == server.name && !server.instances.includes(data.id)) {
+                                if (data.updated.gameServer === server.name && !server.instances.includes(data.id)) {
                                     server.instances.push(data.id);
                                 }
                             }
@@ -121,7 +133,7 @@ export default {
                         case "remove":
                             delete this.instances[data.id];
                             for (const server of this.gameservers) {
-                                server.instances = server.instances.filter(el => el != data.id);
+                                server.instances = server.instances.filter(el => el !== data.id);
                             }
                             this.logs.log("instance", `Instance removed: ${data.id.substring(0, 8)}`, data.id);
                             break;
@@ -135,25 +147,37 @@ export default {
                     }
                     break;
                 case "player":
-                    let instance = this.getInstance(data.id);
                     switch (data.action) {
-                        case "logout":
-                            this.players[instance] = this.players[instance].filter(player => player != data.id); // Remove from their instance
-                            this.logs.log("player", `Player logged out: ${this.usernames[data.id] ?? data.id}`);
+                        case "remove":
+                            this.players = this.players.filter((player) => player.uuid !== data.id);
                             break;
-                        case "transfer":
-                            if (this.players[instance]) { // The field may not exist if the player just logged in without an instance to transfer from
-                                this.players[instance] = this.players[instance].filter(player => player != data.id); // Remove from old instance
+                        case "update":
+                            for (const i in this.players) {
+                                if (this.players[i].uuid === data.id) {
+                                    this.players[i] = data.updated;
+                                    return;
+                                }
                             }
-                            if (!this.players[data.updated.instance]) {
-                                this.players[data.updated.instance] = []; // Create a new entry in the map if necessary
-                            }
-                            this.players[data.updated.instance].push(data.id); // Add to new instance
-                            if (instance !== undefined) {
-                                if (instance !== data.updated.instance)
-                                    this.logs.log("player", `Player ${this.usernames[data.id] ?? data.id} switched from ${instance} to ${data.updated.instance}.`);
-                            } else {
-                                this.logs.log("player", `Player ${this.usernames[data.id] ?? data.id} logged in to ${data.updated.instance}.`);
+                            this.players.push(data.updated);
+                            break;
+                        default:
+                            this.logs.warn(`Dashboard error: unknown action: ${data.action}`);
+                            break;
+                    }
+                    break;
+                case "party":
+                    switch (data.action) {
+                        case "add":
+                            this.parties.push(data.updated);
+                            break;
+                        case "remove":
+                            this.parties = this.parties.filter((it) => it.id !== data.id);
+                            break;
+                        case "update":
+                            for (const i in this.parties) {
+                                if (this.parties[i].id === data.id) {
+                                    this.parties[i] = data.updated;
+                                }
                             }
                             break;
                         default:
@@ -165,9 +189,6 @@ export default {
                     this.logs.warn(`Dashboard error: unknown resource type: ${data.resource}`);
                     break;
             }
-        },
-        getInstance(player) {
-            return Object.keys(this.players).find((instance) => this.players[instance].includes(player));
         },
         onOpen(event) {
             this.logs.info("Connection opened.", event.target.url);
@@ -254,12 +275,12 @@ export default {
                         { name: "View Instance", path: "/" },
                         { name: this.$route.params.name.substring(0, 8), path: this.$route.path }];
                 }
-            } else if (this.$route.matched[0].path == "/game/:name") {
+            } else if (this.$route.matched[0].path === "/game/:name") {
                 return [
                     { name: "Game Servers", path: "/gameservers" },
                     { name: this.$route.params.name, path: this.$route.path }
                 ]
-            } else if (this.$route.matched[0].path == "/game/:name/:mapName") {
+            } else if (this.$route.matched[0].path === "/game/:name/:mapName") {
                 return [
                     { name: "Game Servers", path: "/gameservers" },
                     { name: this.$route.params.name, path: "/game/" + this.$route.params.name },
@@ -274,7 +295,7 @@ export default {
             }
             return [this.$route];
         },
-        ...mapWritableState(useStore, ["ws", "error", "connectDelay", "reconnecting", "connecting", "gameservers", "instances", "players", "usernames", "events"]),
+        ...mapWritableState(useStore, ["ws", "error", "connectDelay", "reconnecting", "connecting", "gameservers", "instances", "players", "usernames", "events", "parties"]),
     },
 };
 </script>

@@ -9,8 +9,9 @@ export const useStore = defineStore('store', {
         connecting: true,
         gameservers: [],
         instances: {},
-        players: {},
+        players: [],
         usernames: {},
         events: [],
+        parties: [],
     }),
 });

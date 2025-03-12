@@ -1,5 +1,6 @@
 <script setup type="text/javascript">
 import { faFilter, faGamepad, faMap, faServer, faUsers } from '@fortawesome/free-solid-svg-icons';
+import PlayerIcon from "@/components/PlayerIcon.vue";
 </script>
 
 <template>
@@ -13,8 +14,8 @@ import { faFilter, faGamepad, faMap, faServer, faUsers } from '@fortawesome/free
         <h3>
             <router-link :to="'/state/' + info.gameState?.stateName" class="muted">{{ state }}</router-link>
             &middot;
-            {{ info.emptySlots }} empty slot{{ info.emptySlots == 1 ? '' : 's' }}
-            ({{ info.gameState?.joinable == false ? 'Not Joinable' : 'Joinable' }})
+            {{ info.emptySlots }} empty slot{{ info.emptySlots === 1 ? '' : 's' }}
+            ({{ info.gameState?.joinable === false ? 'Not Joinable' : 'Joinable' }})
         </h3>
         <h3>
             <!-- Game name -->
@@ -42,14 +43,12 @@ import { faFilter, faGamepad, faMap, faServer, faUsers } from '@fortawesome/free
             <ic :icon="faServer" />
             <router-link :to="'/server/' + info.gameServer" class="muted">{{ info.gameServer }}</router-link>
         </h3>
-        <div v-if="players[$props.name]?.length > 0">
+        <div v-if="myPlayers.length > 0" class="player-list">
             <h3>
                 <ic :icon="faUsers" />
-                Players ({{ players[$props.name]?.length ?? 0 }}):
+                Players ({{ myPlayers.length }}):
             </h3>
-            <img v-for="player in players[$props.name]"
-                :src="'https://crafatar.com/avatars/' + player + '?size=32&overlay=true'" class="player-icon"
-                :title="usernames[player]" :alt="usernames[player]" />
+            <PlayerIcon v-for="player in myPlayers" :size="32" :player="player" />
         </div>
     </div>
     <div v-else-if="loaded">
@@ -78,6 +77,9 @@ export default {
         exists() {
             return !!this.info;
         },
+        myPlayers() {
+            return this.players.filter((it) => it.gameId === this.info.id) ?? [];
+        },
         ...mapState(useStore, ["instances", "gameservers", "players", "usernames", "error"]),
     },
     props: ["name", "header"]
@@ -97,17 +99,14 @@ export default {
     opacity: 0.2;
 }
 
-img.player-icon {
-    width: 32px;
-    height: 32px;
-    margin: 5px;
-    border-radius: 2px;
-    /* Disable nearest-neighbor (blurry) image upscaling */
-    image-rendering: -moz-crisp-edges;
-    image-rendering: pixelated;
-}
-
 svg {
     margin-right: 5px;
+}
+
+.player-list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 </style>

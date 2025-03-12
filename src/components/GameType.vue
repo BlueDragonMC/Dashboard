@@ -1,6 +1,4 @@
 <script setup type="text/javascript">
-import { mapState } from "pinia";
-import { useStore } from "../stores/store";
 import Instance from "./Instance.vue";
 </script>
 
@@ -18,22 +16,25 @@ import Instance from "./Instance.vue";
                 <Instance :name="instance.id" :header="false" />
             </div>
         </div>
-        <h2 v-else-if="this.$props.gameservers.length == 0">Loading...</h2>
+        <h2 v-else-if="this.$props.gameservers.length === 0">Loading...</h2>
         <h2 v-else>No matching game servers were found.</h2>
     </main>
 </template>
 
 <script>
+import { mapState } from "pinia";
+import { useStore } from "../stores/store";
+
 export default {
     props: ["name", "mapName"],
     computed: {
         typedInstances() {
             return Object.values(this.instances).filter(instance => {
-                if (instance.gameType.name != this.$props.name) {
+                if (instance.gameType.name !== this.$props.name) {
                     return false;
                 }
                 if (this.$route.params.mapName) {
-                    if (instance.gameType.mapName != this.$props.mapName) {
+                    if (instance.gameType.mapName !== this.$props.mapName) {
                         return false;
                     }
                 }
