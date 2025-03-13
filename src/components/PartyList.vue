@@ -18,8 +18,8 @@
         </table>
 
         <h3 v-if="party.marathon">Marathon Progress</h3>
-        <p>Ends at: {{ new Date(party.marathon.endsAt).toLocaleString() }}</p>
-        <table>
+        <p v-if="party.marathon">Ends at: {{ new Date(party.marathon.endsAt).toLocaleString() }}</p>
+        <table v-if="party.marathon">
             <tbody>
             <tr v-for="(points, member) in party.marathon.points" :key="member">
                 <td>
