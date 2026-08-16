@@ -26,9 +26,9 @@ import imgUrl from './assets/favicon_hq.png';
 
 <script>
 import { faCircleExclamation, faInfoCircle, faLayerGroup, faPersonWalking, faServer, faWarning } from '@fortawesome/free-solid-svg-icons';
+import { applyPatch } from "fast-json-patch";
 import { mapWritableState } from 'pinia';
 import { useStore } from './stores/store';
-import {applyPatch} from "fast-json-patch";
 
 export default {
     created() {
@@ -52,6 +52,7 @@ export default {
                     this.logs.info("Updated all game servers", `Retrieved ${this.gameservers.length} servers.`);
                     break;
                 case "instances":
+                    this.instances = {};
                     for (const instance of data.instances) {
                         this.instances[instance.id] = instance;
                     }
@@ -123,12 +124,19 @@ export default {
                     switch (data.action) {
                         case "add":
                             this.instances[data.id] = data.updated;
+                            let found = false;
                             for (const server of this.gameservers) {
                                 if (data.updated.gameServer === server.name && !server.instances.includes(data.id)) {
                                     server.instances.push(data.id);
+                                    found = true;
                                 }
                             }
                             this.logs.log("instance", `New instance: ${data.id.substring(0, 8)}`, data.id);
+                            if (!found) {
+                                // If no game server was found with a matching name, we're likely out of sync. Re-request the list of game servers and instances.
+                                this.ws.send(JSON.stringify({ request: 'getGameServers' }));
+                                this.ws.send(JSON.stringify({ request: 'getInstances' }));
+                            }
                             break;
                         case "remove":
                             delete this.instances[data.id];
