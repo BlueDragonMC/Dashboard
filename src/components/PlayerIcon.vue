@@ -1,5 +1,5 @@
 <template>
-    <img v-if="player" :src="'https://crafatar.com/avatars/' + player.uuid + '?size=' + size + '&overlay=true'"
+    <img v-if="player" :src="'https://mc-heads.net/avatar/' + player.uuid + '/' + size"
          class="player-icon" :title="player.username" :alt="player.username" :width="size" :height="size"/>
     <span v-else class="player-icon icon-not-found" :style="'--size: ' + size + 'px'">?</span>
 </template>
