@@ -1,12 +1,12 @@
 <template>
     <p>Namespace: <code>{{ namespace ?? "<Unknown>" }}</code></p>
 
-    <h2>Agones Options</h2>
-    <div class="optgroup fleet-options">
+    <h2>Game Server Options</h2>
+    <div class="optgroup server-options">
 
-        <p>Fleet Size</p>
-        <input type="number" placeholder="#" id="cluster-fleet-scale" v-model="cluster.fleetScale" />
-        <button @click="scaleFleet()">Scale</button>
+        <p>Server Count</p>
+        <input type="number" placeholder="#" id="cluster-server-scale" v-model="cluster.serverReplicas" />
+        <button @click="scaleServers()">Scale</button>
 
     </div>
 </template>
@@ -17,13 +17,13 @@ import { useStore } from '../stores/store';
 
 export default {
     methods: {
-        scaleFleet() {
+        scaleServers() {
             this.namespacedRequest(
-                (ns) => `/k8s/apis/agones.dev/v1/namespaces/${ns}/fleets/server/scale`,
+                (ns) => `/k8s/apis/apps/v1/namespaces/${ns}/deployments/server/scale`,
                 "PATCH",
                 { // body
                     spec: {
-                        replicas: this.cluster.fleetScale
+                        replicas: this.cluster.serverReplicas
                     }
                 },
                 { // headers
@@ -54,13 +54,13 @@ export default {
     data() {
         return {
             cluster: {
-                fleetScale: 0,
+                serverReplicas: 0,
             }
         };
     },
     watch: {
         gameservers(newValue) {
-            this.cluster.fleetScale = newValue.length;
+            this.cluster.serverReplicas = newValue.length;
         },
     },
     computed: {
@@ -75,7 +75,7 @@ export default {
     },
     mounted() {
         if (this.gameservers) {
-            this.cluster.fleetScale = this.gameservers.length;
+            this.cluster.serverReplicas = this.gameservers.length;
         }
     }
 }
@@ -88,7 +88,7 @@ export default {
     padding: 10px;
 }
 
-.fleet-options {
+.server-options {
     display: grid;
     grid-template-columns: repeat(3, auto);
     max-width: min-content;
@@ -97,11 +97,11 @@ export default {
     align-items: center;
 }
 
-.fleet-options p {
+.server-options p {
     font-weight: bold;
 }
 
-.fleet-options button {
+.server-options button {
     width: min-content;
     padding: 5px 15px;
     background-color: var(--accent-background);

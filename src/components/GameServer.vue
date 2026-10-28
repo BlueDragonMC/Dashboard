@@ -8,12 +8,12 @@ import Instance from './Instance.vue';
         <div v-if="info">
             <code>
                 <p><b>Namespace:</b> {{ info?.raw?.metadata?.namespace }}</p>
-                <p><b>Image:</b> {{ info?.raw?.spec?.template?.spec?.containers?.[0]?.image }}</p>
-                <p><b>Node:</b> {{ info?.raw?.status?.nodeName }}</p>
-                <p><b>Status:</b> {{ info?.raw?.status?.state }}</p>
-                <p>
-                    <b>Reserved until:</b> {{ info?.raw?.status?.reservedUntil ? new Date(info?.raw?.status?.reservedUntil).toLocaleString() : "Not reserved" }}
-                </p>
+                <p><b>Image:</b> {{ info?.raw?.spec?.containers?.[0]?.image }}</p>
+                <p><b>Node:</b> {{ info?.raw?.spec?.nodeName }}</p>
+                <p><b>Phase:</b> {{ info?.raw?.status?.phase }}</p>
+                <p><b>Ready:</b> {{ info?.ready ? "Yes" : "No" }}</p>
+                <p><b>Draining:</b> {{ info?.draining ? "Yes" : "No" }}</p>
+                <p><b>Terminating:</b> {{ info?.terminating ? "Yes" : "No" }}</p>
                 <p><b>Address:</b> {{ info?.address }}:{{ info?.port }}</p>
                 <router-link :to="'/logs/' + info.raw.metadata.namespace + '/' + $route.params.name" target="_blank" 
                     rel="noopener noreferrer">View Logs in New Tab</router-link>
